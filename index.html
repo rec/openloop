@@ -92,6 +92,21 @@
         content.hidden = false;
         content.focus();
       });
+
+      document.addEventListener("click", (event) => {
+        if (
+          content.hidden ||
+          event.defaultPrevented ||
+          event.target.closest("a, button, input, select, textarea, label, summary, [contenteditable]")
+        ) {
+          return;
+        }
+
+        content.hidden = true;
+        intro.hidden = false;
+        video.play();
+        intro.focus();
+      });
     </script>
   </body>
 </html>
