@@ -54,29 +54,26 @@
   </head>
   <body>
     <main>
-      <button id="intro" type="button" aria-label="Read about Openloop">
-        <video autoplay muted loop playsinline aria-hidden="true">
+      <button id="intro" type="button" aria-label="Read about Openloop" hidden>
+        <video  muted loop playsinline preload="none" aria-hidden="true">
           <source src="open-loop.mp4" type="video/mp4">
         </video>
       </button>
 
-      <!-- Replace this section with your English text. -->
       <article id="en" lang="en" tabindex="-1" hidden>
-        <h1>Openloop</h1>
-        <p>Welcome to Openloop.</p>
-        <p>The English text will appear here.</p>
+<h1>History</h1>
+<p><a href="index.html">Home</a></p>
       </article>
 
-      <!-- Replace this section with your French text. -->
       <article id="fr" lang="fr" tabindex="-1" hidden>
-        <h1>Openloop</h1>
-        <p>Bienvenue sur Openloop.</p>
-        <p>Le texte français apparaîtra ici.</p>
+
       </article>
     </main>
 
     <script>
-      const language = navigator.language.toLowerCase().split("-")[0] === "fr" ? "fr" : "en";
+      const language = false
+        ? (navigator.language.toLowerCase().split("-")[0] === "fr" ? "fr" : "en")
+        : document.documentElement.lang;
       const intro = document.getElementById("intro");
       const content = document.getElementById(language);
       const video = document.querySelector("video");
@@ -86,27 +83,31 @@
         intro.setAttribute("aria-label", "À propos d’Openloop");
       }
 
-      intro.addEventListener("click", () => {
-        video.pause();
-        intro.hidden = true;
+      if (false) {
+        intro.addEventListener("click", () => {
+          video.pause();
+          intro.hidden = true;
+          content.hidden = false;
+          content.focus();
+        });
+
+        document.addEventListener("click", (event) => {
+          if (
+            content.hidden ||
+            event.defaultPrevented ||
+            event.target.closest("a, button, input, select, textarea, label, summary, [contenteditable]")
+          ) {
+            return;
+          }
+
+          content.hidden = true;
+          intro.hidden = false;
+          video.play();
+          intro.focus();
+        });
+      } else {
         content.hidden = false;
-        content.focus();
-      });
-
-      document.addEventListener("click", (event) => {
-        if (
-          content.hidden ||
-          event.defaultPrevented ||
-          event.target.closest("a, button, input, select, textarea, label, summary, [contenteditable]")
-        ) {
-          return;
-        }
-
-        content.hidden = true;
-        intro.hidden = false;
-        video.play();
-        intro.focus();
-      });
+      }
     </script>
   </body>
 </html>

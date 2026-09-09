@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Openloop</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+    <style>
+      body {
+        margin: 0;
+        color: #222;
+        background: #fff;
+        font-family: system-ui, sans-serif;
+        font-size: 1.125rem;
+        line-height: 1.6;
+      }
+
+      #intro {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 100svh;
+        padding: 0;
+        border: 0;
+        color: #fff;
+        background: #000;
+        cursor: pointer;
+        font: inherit;
+      }
+
+      #intro:focus-visible {
+        outline: 3px solid #fff;
+        outline-offset: -6px;
+      }
+
+      video {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      article {
+        max-width: 42rem;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+      }
+
+      #intro[hidden],
+      [hidden] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <button id="intro" type="button" aria-label="Read about Openloop" >
+        <video autoplay muted loop playsinline preload="none" aria-hidden="true">
+          <source src="open-loop.mp4" type="video/mp4">
+        </video>
+      </button>
+
+      <article id="en" lang="en" tabindex="-1" hidden>
+<h1>Welcome</h1>
+<p>Read <a href="history.html">history</a>.</p>
+      </article>
+
+      <article id="fr" lang="fr" tabindex="-1" hidden>
+<h1>Bienvenue</h1>
+<p>Lire <a href="histoire.html">l’histoire</a>.</p>
+      </article>
+    </main>
+
+    <script>
+      const language = true
+        ? (navigator.language.toLowerCase().split("-")[0] === "fr" ? "fr" : "en")
+        : document.documentElement.lang;
+      const intro = document.getElementById("intro");
+      const content = document.getElementById(language);
+      const video = document.querySelector("video");
+
+      document.documentElement.lang = language;
+      if (language === "fr") {
+        intro.setAttribute("aria-label", "À propos d’Openloop");
+      }
+
+      if (true) {
+        intro.addEventListener("click", () => {
+          video.pause();
+          intro.hidden = true;
+          content.hidden = false;
+          content.focus();
+        });
+
+        document.addEventListener("click", (event) => {
+          if (
+            content.hidden ||
+            event.defaultPrevented ||
+            event.target.closest("a, button, input, select, textarea, label, summary, [contenteditable]")
+          ) {
+            return;
+          }
+
+          content.hidden = true;
+          intro.hidden = false;
+          video.play();
+          intro.focus();
+        });
+      } else {
+        content.hidden = false;
+      }
+    </script>
+  </body>
+</html>
