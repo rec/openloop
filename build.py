@@ -74,18 +74,29 @@ class Build(BaseModel, frozen=True):
 
 
 def render_markdown(text: str) -> str:
-    """Render paragraphs, ATX headings, and inline Markdown links."""
+    """Render paragraphs, headings, lists, and inline Markdown links."""
     blocks: list[str] = []
     paragraph: list[str] = []
+    list_tag = ""
     for line in [*text.splitlines(), ""]:
         heading = re.fullmatch(r"(#{1,6})\s+(.*)", line)
-        if not line.strip() or heading:
+        item = re.fullmatch(r"(\*|\d+\.)\s+(.*)", line)
+        tag = ("ul" if item[1] == "*" else "ol") if item else ""
+        if list_tag and list_tag != tag:
+            blocks.append(f"</{list_tag}>")
+            list_tag = ""
+        if not line.strip() or heading or item:
             if paragraph:
                 blocks.append(f"<p>{render_links(' '.join(paragraph))}</p>")
                 paragraph.clear()
             if heading:
                 level = len(heading[1])
                 blocks.append(f"<h{level}>{render_links(heading[2])}</h{level}>")
+            elif item:
+                if not list_tag:
+                    list_tag = tag
+                    blocks.append(f"<{list_tag}>")
+                blocks.append(f"<li>{render_links(item[2])}</li>")
         else:
             paragraph.append(line.strip())
     return "\n".join(blocks)

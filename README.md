@@ -14,8 +14,9 @@ Run `uv run build.py` to generate the site in `build/`, then open
   immediately in their source language, regardless of the browser language.
 - Filenames must be unique across `en/` and `fr/`. The two `index.md` files
   are the sole exception: they are combined into the bilingual landing page.
-- Markdown supports paragraphs, `#` through `######` headings, and
-  `[label](URL)` links. Relative links to `.md` files become `.html` links.
+- Markdown supports paragraphs, `#` through `######` headings, `* item` bullet
+  lists, `1. item` numbered lists, and `[label](URL)` links. Put each list item
+  on its own line. Relative links to `.md` files become `.html` links.
 - Put fixed assets in `assets/`. They are copied into `build/` with the same
   relative paths when missing or when their source timestamp is newer.
   The template is excluded from copying.
