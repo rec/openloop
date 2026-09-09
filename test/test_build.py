@@ -23,7 +23,8 @@ def site(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_simple_markdown(file_regression: FileRegressionFixture) -> None:
+@pytest.mark.parametrize("newline", ["\n", "\r\n", "\r"], ids=["lf", "crlf", "cr"])
+def test_simple_markdown(file_regression: FileRegressionFixture, newline: str) -> None:
     markdown = """# Title & text
 A paragraph with <tags> and {braces}
 continued on another line.
@@ -39,7 +40,11 @@ continued on another line.
 
 *Literal asterisks* and plain text.
 """
-    file_regression.check(render_markdown(markdown), extension=".html")
+    file_regression.check(
+        render_markdown(markdown.replace("\n", newline)),
+        basename="test_simple_markdown",
+        extension=".html",
+    )
 
 
 def test_index_combines_both_languages(
