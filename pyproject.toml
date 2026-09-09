@@ -1,0 +1,22 @@
+[project]
+name = "openloop"
+version = "0.1.0"
+description = "A simple bilingual static website builder"
+requires-python = ">=3.13"
+dependencies = [
+    "pydantic>=2.13.5",
+    "tyro>=1.0.16",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["test"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-regressions>=2.11.0",
+    "pyupgrade>=3.21.2",
+    "ruff>=0.16.5",
+    "ty>=0.0.77",
+]
