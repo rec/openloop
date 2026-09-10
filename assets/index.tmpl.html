@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="{language}">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -54,27 +54,19 @@
   </head>
   <body>
     <main>
-      <button id="intro" type="button" aria-label="Read about Openloop" {intro_hidden}>
-        <video {autoplay} muted loop playsinline preload="none" aria-hidden="true">
+      <button id="intro" type="button" aria-label="Read about Openloop">
+        <video autoplay muted loop playsinline preload="none" aria-hidden="true">
           <source src="open-loop.mp4" type="video/mp4">
         </video>
       </button>
 
-      <article id="en" lang="en" tabindex="-1" hidden>
-{en}
-      </article>
-
-      <article id="fr" lang="fr" tabindex="-1" hidden>
-{fr}
-      </article>
+{pages}
     </main>
 
     <script>
-      const language = {is_index}
-        ? (navigator.language.toLowerCase().split("-")[0] === "fr" ? "fr" : "en")
-        : document.documentElement.lang;
+      const language = navigator.language.toLowerCase().split("-")[0] === "fr" ? "fr" : "en";
       const intro = document.getElementById("intro");
-      const content = document.getElementById(language);
+      let content = document.getElementById(language + "/index");
       const video = document.querySelector("video");
 
       document.documentElement.lang = language;
@@ -82,31 +74,44 @@
         intro.setAttribute("aria-label", "À propos d’Openloop");
       }}
 
-      if ({is_index}) {{
-        intro.addEventListener("click", () => {{
-          video.pause();
-          intro.hidden = true;
-          content.hidden = false;
-          content.focus();
-        }});
-
-        document.addEventListener("click", (event) => {{
-          if (
-            content.hidden ||
-            event.defaultPrevented ||
-            event.target.closest("a, button, input, select, textarea, label, summary, [contenteditable]")
-          ) {{
-            return;
-          }}
-
-          content.hidden = true;
-          intro.hidden = false;
-          video.play();
-          intro.focus();
-        }});
-      }} else {{
+      function showPage(page) {{
+        content.hidden = true;
+        content = page;
+        video.pause();
+        intro.hidden = true;
         content.hidden = false;
+        document.documentElement.lang = content.lang;
+        content.focus();
+        window.scrollTo(0, 0);
       }}
+
+      intro.addEventListener("click", () => {{
+        showPage(document.getElementById(language + "/index"));
+      }});
+
+      document.addEventListener("click", (event) => {{
+        if (event.defaultPrevented) return;
+        const link = event.target.closest("a[data-page]");
+        if (link) {{
+          event.preventDefault();
+          const page = document.getElementById(link.dataset.page);
+          if (page) showPage(page);
+          return;
+        }}
+
+        if (
+          content.hidden ||
+          !content.id.endsWith("/index") ||
+          event.target.closest("a, button, input, select, textarea, label, summary, [contenteditable]")
+        ) {{
+          return;
+        }}
+
+        content.hidden = true;
+        intro.hidden = false;
+        video.play();
+        intro.focus();
+      }});
     </script>
   </body>
 </html>

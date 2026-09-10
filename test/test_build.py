@@ -41,7 +41,7 @@ continued on another line.
 *Literal asterisks* and plain text.
 """
     file_regression.check(
-        render_markdown(markdown.replace("\n", newline)),
+        render_markdown(markdown.replace("\n", newline), "en/index"),
         basename="test_simple_markdown",
         extension=".html",
     )
@@ -54,27 +54,14 @@ def test_index_combines_both_languages(
     file_regression.check((site / "build/index.html").read_text(), extension=".html")
 
 
-@pytest.mark.parametrize(("language", "name"), [("en", "history"), ("fr", "histoire")])
-def test_secondary_page_uses_its_source_language(
-    site: Path, file_regression: FileRegressionFixture, language: str, name: str
+def test_pages_with_matching_names_are_embedded(
+    site: Path, file_regression: FileRegressionFixture
 ) -> None:
-    (site / language / f"{name}.md").write_text("# History\n\n[Home](index.md)")
+    (site / "en/history.md").write_text("# History\n\n[Français](../fr/history.md)")
+    (site / "fr/history.md").write_text("# Histoire\n\n[Accueil](index.md)")
     Build(root=site).run()
-    assert {p.name for p in (site / "build").iterdir()} == {
-        "index.html",
-        f"{name}.html",
-    }
-    file_regression.check(
-        (site / "build" / f"{name}.html").read_text(), extension=".html"
-    )
-
-
-def test_duplicate_secondary_filenames_are_rejected(site: Path) -> None:
-    for language in ("en", "fr"):
-        (site / language / "history.md").write_text("History")
-    with pytest.raises(ValueError, match="Duplicate Markdown filename: history.md"):
-        Build(root=site).run()
-    assert not (site / "build").exists()
+    assert {p.name for p in (site / "build").iterdir()} == {"index.html"}
+    file_regression.check((site / "build/index.html").read_text(), extension=".html")
 
 
 def test_assets_are_copied_only_when_missing_or_newer(site: Path) -> None:
