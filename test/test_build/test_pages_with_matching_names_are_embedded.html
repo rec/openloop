@@ -118,7 +118,7 @@
       }
 
       intro.addEventListener("click", () => {
-        showPage(document.getElementById(language + "/index"));
+        showPage(content);
       });
 
       document.addEventListener("click", (event) => {
@@ -133,7 +133,6 @@
 
         if (
           content.hidden ||
-          !content.id.endsWith("/index") ||
           event.target.closest("a, button, input, select, textarea, label, summary, [contenteditable]")
         ) {
           return;
