@@ -9,6 +9,17 @@ from urllib.parse import unquote, urlsplit
 import tyro
 from pydantic import BaseModel
 
+TRANSLATED_STEMS = {
+    ("en", "history"): "histoire",
+    ("en", "rights"): "droits",
+    ("en", "rules"): "règles",
+    ("en", "technology"): "technologie",
+    ("fr", "droits"): "rights",
+    ("fr", "histoire"): "history",
+    ("fr", "règles"): "rules",
+    ("fr", "technologie"): "technology",
+}
+
 
 class Build(BaseModel, frozen=True):
     """Build the bilingual website from Markdown and fixed assets."""
@@ -33,17 +44,21 @@ class Build(BaseModel, frozen=True):
                     copy2(source, destination)
 
         template = template_path.read_text()
+        sources_by_language = {
+            language: markdown_sources(self.root / language)
+            for language in ("en", "fr")
+        }
         pages: list[str] = []
-        for language in ("en", "fr"):
-            directory = self.root / language
-            sources = [directory / "index.md"]
-            sources.extend(
-                p for p in sorted(directory.glob("*.md")) if p.name != "index.md"
-            )
+        for language, sources in sources_by_language.items():
             for source in sources:
                 page = f"{language}/{source.stem}"
                 content = render_markdown(source.read_text(), page)
-                navigation = render_navigation(language, sources, source.stem)
+                navigation = render_navigation(
+                    language,
+                    sources,
+                    source.stem,
+                    corresponding_page(language, source.stem, sources_by_language),
+                )
                 pages.append(
                     f'<article id="{escape(page, quote=True)}" lang="{language}" '
                     'tabindex="-1" hidden>\n'
@@ -96,7 +111,29 @@ def render_markdown(text: str, page: str) -> str:
     return "\n".join(blocks)
 
 
-def render_navigation(language: str, sources: list[Path], current: str) -> str:
+def markdown_sources(directory: Path) -> list[Path]:
+    """Return Markdown files with the landing page first."""
+    return [
+        directory / "index.md",
+        *(p for p in sorted(directory.glob("*.md")) if p.name != "index.md"),
+    ]
+
+
+def corresponding_page(
+    language: str, stem: str, sources_by_language: dict[str, list[Path]]
+) -> str:
+    """Return the other language's page corresponding to a source page."""
+    other_language = "fr" if language == "en" else "en"
+    translated_stem = TRANSLATED_STEMS.get((language, stem), stem)
+    other_stems = {source.stem for source in sources_by_language[other_language]}
+    if translated_stem not in other_stems:
+        translated_stem = stem
+    return f"{other_language}/{translated_stem}"
+
+
+def render_navigation(
+    language: str, sources: list[Path], current: str, other_page: str
+) -> str:
     """Render links to pages available in one language."""
     links: list[str] = []
     for source in sources:
@@ -105,6 +142,11 @@ def render_navigation(language: str, sources: list[Path], current: str) -> str:
         if name == current:
             attributes += ' aria-current="page"'
         links.append(f"<a {attributes}>{escape(name)}</a>")
+    other_language = "fr" if language == "en" else "en"
+    links.append(
+        f'<a class="language-toggle" href="#" data-page="{other_page}">'
+        f".{other_language}</a>"
+    )
     return '<nav aria-label="Pages">' + " ".join(links) + "</nav>"
 
 
