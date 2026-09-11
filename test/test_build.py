@@ -70,12 +70,23 @@ def test_command_bar_lists_the_current_language_pages(site: Path) -> None:
         'aria-current="page">index</a> <a href="#" data-page="en/history">history</a> '
         '<a href="#" data-page="en/rouen">rouen</a> <a href="#" '
         'data-page="en/rules">rules</a> <a href="#" '
-        'data-page="en/technology">technology</a></nav>'
+        'data-page="en/technology">technology</a> <a class="language-toggle" '
+        'href="#" data-page="fr/index">.fr</a></nav>'
     ) in html
     assert (
         '<nav aria-label="Pages"><a href="#" data-page="fr/index" '
-        'aria-current="page">index</a> <a href="#" data-page="fr/rouen">rouen</a></nav>'
+        'aria-current="page">index</a> <a href="#" data-page="fr/rouen">rouen</a> '
+        '<a class="language-toggle" href="#" data-page="en/index">.en</a></nav>'
     ) in html
+
+
+def test_language_toggle_uses_translated_filenames(site: Path) -> None:
+    (site / "en/history.md").write_text("# History")
+    (site / "fr/histoire.md").write_text("# Histoire")
+    Build(root=site, sync=False).run()
+    html = (site / "build/index.html").read_text()
+    assert 'class="language-toggle" href="#" data-page="fr/histoire">.fr</a>' in html
+    assert 'class="language-toggle" href="#" data-page="en/history">.en</a>' in html
 
 
 def test_assets_are_copied_only_when_missing_or_newer(site: Path) -> None:
