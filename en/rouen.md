@@ -1,6 +1,9 @@
 # openLoop rererises repriseses in Rouen
 
-## Next show: 17 October 2026, 14h - 19h at Le Diable Au Corps
+## Next show
+
+* 17 October 2026, 14h - 19h
+* [Le Diable Au Corps](https://www.facebook.com/leDACaucorps), [100 Rue Saint Hilaire, Rouen](https://cartes.app/?allez=100+Rue+Saint+Hilaire%2C+76000+Rouen%7C%7C1.10851%7C49.44231#17.99/49.442215/1.108873)
 
 ## What?
 

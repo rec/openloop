@@ -1,6 +1,6 @@
 # loo l o openLoop p o loop loop
 
-Des musiciennes et musiciens électriques ouvrent de longues formes, jouent librement et bouclent boucboucbouclent.
+Musiques électriques boucléclées de longues formes jouer libre bouclent boucboucbouclons.
 
 Tout le monde est bienvenu pour jouer et écouter.
 
