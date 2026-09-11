@@ -45,7 +45,7 @@ continued on another line.
 def test_index_combines_both_languages(
     site: Path, file_regression: FileRegressionFixture
 ) -> None:
-    Build(root=site).run()
+    Build(root=site, sync=False).run()
     file_regression.check((site / "build/index.html").read_text(), extension=".html")
 
 
@@ -54,7 +54,7 @@ def test_pages_with_matching_names_are_embedded(
 ) -> None:
     (site / "en/history.md").write_text("# History\n\n[Français](../fr/history.md)")
     (site / "fr/history.md").write_text("# Histoire\n\n[Accueil](index.md)")
-    Build(root=site).run()
+    Build(root=site, sync=False).run()
     assert {p.name for p in (site / "build").iterdir()} == {"index.html"}
     file_regression.check((site / "build/index.html").read_text(), extension=".html")
 
@@ -63,7 +63,7 @@ def test_command_bar_lists_the_current_language_pages(site: Path) -> None:
     for name in ("technology", "history", "rouen", "rules"):
         (site / "en" / f"{name}.md").write_text(name)
     (site / "fr" / "rouen.md").write_text("rouen")
-    Build(root=site).run()
+    Build(root=site, sync=False).run()
     html = (site / "build/index.html").read_text()
     assert (
         '<nav aria-label="Pages"><a href="#" data-page="en/index" '
@@ -83,17 +83,17 @@ def test_assets_are_copied_only_when_missing_or_newer(site: Path) -> None:
     source.parent.mkdir()
     source.write_text("original asset")
     utime(source, ns=(1_000_000_000, 1_000_000_000))
-    Build(root=site).run()
+    Build(root=site, sync=False).run()
     destination = site / "build/images/logo.svg"
     assert destination.read_text() == "original asset"
     assert destination.stat().st_mtime_ns == source.stat().st_mtime_ns
 
     destination.write_text("newer destination")
     utime(destination, ns=(2_000_000_000, 2_000_000_000))
-    Build(root=site).run()
+    Build(root=site, sync=False).run()
     assert destination.read_text() == "newer destination"
 
     source.write_text("updated source")
     utime(source, ns=(3_000_000_000, 3_000_000_000))
-    Build(root=site).run()
+    Build(root=site, sync=False).run()
     assert destination.read_text() == "updated source"
