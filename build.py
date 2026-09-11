@@ -61,7 +61,7 @@ class Build(BaseModel, frozen=True):
                 )
                 pages.append(
                     f'<article id="{escape(page, quote=True)}" lang="{language}" '
-                    'tabindex="-1" hidden>\n'
+                    "hidden>\n"
                     f"{content}\n"
                     f"{navigation}\n</article>"
                 )
