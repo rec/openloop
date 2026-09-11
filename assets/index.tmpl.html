@@ -46,6 +46,19 @@
         padding: 3rem 1.5rem;
       }}
 
+      nav {{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        margin-bottom: 2rem;
+        font-size: 0.875rem;
+      }}
+
+      nav a[aria-current="page"] {{
+        color: #999;
+        pointer-events: none;
+      }}
+
       #intro[hidden],
       [hidden] {{
         display: none;

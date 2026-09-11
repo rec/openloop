@@ -59,6 +59,25 @@ def test_pages_with_matching_names_are_embedded(
     file_regression.check((site / "build/index.html").read_text(), extension=".html")
 
 
+def test_command_bar_lists_the_current_language_pages(site: Path) -> None:
+    for name in ("technology", "history", "rouen", "rules"):
+        (site / "en" / f"{name}.md").write_text(name)
+    (site / "fr" / "rouen.md").write_text("rouen")
+    Build(root=site).run()
+    html = (site / "build/index.html").read_text()
+    assert (
+        '<nav aria-label="Pages"><a href="#" data-page="en/index" '
+        'aria-current="page">index</a> <a href="#" data-page="en/history">history</a> '
+        '<a href="#" data-page="en/rouen">rouen</a> <a href="#" '
+        'data-page="en/rules">rules</a> <a href="#" '
+        'data-page="en/technology">technology</a></nav>'
+    ) in html
+    assert (
+        '<nav aria-label="Pages"><a href="#" data-page="fr/index" '
+        'aria-current="page">index</a> <a href="#" data-page="fr/rouen">rouen</a></nav>'
+    ) in html
+
+
 def test_assets_are_copied_only_when_missing_or_newer(site: Path) -> None:
     source = site / "assets/images/logo.svg"
     source.parent.mkdir()

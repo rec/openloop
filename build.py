@@ -43,10 +43,12 @@ class Build(BaseModel, frozen=True):
             for source in sources:
                 page = f"{language}/{source.stem}"
                 content = render_markdown(source.read_text(), page)
+                navigation = render_navigation(language, sources, source.stem)
                 pages.append(
                     f'<article id="{escape(page, quote=True)}" lang="{language}" '
                     'tabindex="-1" hidden>\n'
-                    f"{content}\n</article>"
+                    f"{content}\n"
+                    f"{navigation}\n</article>"
                 )
         (output / "index.html").write_text(template.format(pages="\n".join(pages)))
 
@@ -92,6 +94,18 @@ def render_markdown(text: str, page: str) -> str:
         else:
             paragraph.append(line.strip())
     return "\n".join(blocks)
+
+
+def render_navigation(language: str, sources: list[Path], current: str) -> str:
+    """Render links to pages available in one language."""
+    links: list[str] = []
+    for source in sources:
+        name = source.stem
+        attributes = f'href="#" data-page="{language}/{escape(name, quote=True)}"'
+        if name == current:
+            attributes += ' aria-current="page"'
+        links.append(f"<a {attributes}>{escape(name)}</a>")
+    return '<nav aria-label="Pages">' + " ".join(links) + "</nav>"
 
 
 def render_links(text: str, page: str) -> str:
