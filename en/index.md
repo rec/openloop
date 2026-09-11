@@ -1,6 +1,6 @@
 # loo l o openLoop p o loop loop
 
-Electrical musicians open long form perform open and looplooploop.
+Electrical music open long form perform open and looplooploop.
 
 All are welcome to play and listen.
 
