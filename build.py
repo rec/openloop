@@ -14,7 +14,7 @@ class Build(BaseModel, frozen=True):
     """Build the bilingual website from Markdown and fixed assets."""
 
     root: Path = Path(__file__).resolve().parent
-    sync: bool = False
+    sync: bool = True
     """Upload the generated site to server.swirly.com after building."""
 
     def run(self) -> None:
