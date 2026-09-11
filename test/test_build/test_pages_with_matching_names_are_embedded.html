@@ -76,22 +76,22 @@
         </video>
       </button>
 
-<article id="en/index" lang="en" tabindex="-1" hidden>
+<article id="en/index" lang="en" hidden>
 <h1>Welcome</h1>
 <p>Read <a href="#" data-page="en/history">history</a>.</p>
 <nav aria-label="Pages"><a href="#" data-page="en/index" aria-current="page">index</a> <a href="#" data-page="en/history">history</a> <a class="language-toggle" href="#" data-page="fr/index">.fr</a></nav>
 </article>
-<article id="en/history" lang="en" tabindex="-1" hidden>
+<article id="en/history" lang="en" hidden>
 <h1>History</h1>
 <p><a href="#" data-page="fr/history">Français</a></p>
 <nav aria-label="Pages"><a href="#" data-page="en/index">index</a> <a href="#" data-page="en/history" aria-current="page">history</a> <a class="language-toggle" href="#" data-page="fr/history">.fr</a></nav>
 </article>
-<article id="fr/index" lang="fr" tabindex="-1" hidden>
+<article id="fr/index" lang="fr" hidden>
 <h1>Bienvenue</h1>
 <p>Lire <a href="#" data-page="fr/histoire">l’histoire</a>.</p>
 <nav aria-label="Pages"><a href="#" data-page="fr/index" aria-current="page">index</a> <a href="#" data-page="fr/history">history</a> <a class="language-toggle" href="#" data-page="en/index">.en</a></nav>
 </article>
-<article id="fr/history" lang="fr" tabindex="-1" hidden>
+<article id="fr/history" lang="fr" hidden>
 <h1>Histoire</h1>
 <p><a href="#" data-page="fr/index">Accueil</a></p>
 <nav aria-label="Pages"><a href="#" data-page="fr/index">index</a> <a href="#" data-page="fr/history" aria-current="page">history</a> <a class="language-toggle" href="#" data-page="en/history">.en</a></nav>
@@ -116,7 +116,6 @@
         intro.hidden = true;
         content.hidden = false;
         document.documentElement.lang = content.lang;
-        content.focus();
         window.scrollTo(0, 0);
       }
 
