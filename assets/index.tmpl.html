@@ -56,7 +56,6 @@
 
       nav a[aria-current="page"] {{
         color: #999;
-        pointer-events: none;
       }}
 
       #intro[hidden],
@@ -107,6 +106,7 @@
         const link = event.target.closest("a[data-page]");
         if (link) {{
           event.preventDefault();
+          if (link.ariaCurrent === "page") return;
           const page = document.getElementById(link.dataset.page);
           if (page) showPage(page);
           return;
