@@ -1,8 +1,8 @@
 ## Les règles
 
-1. Soyez sympa
+1. Soyez bienveillant
 
-## Sept suggestions
+## Quelque sept suggestions
 
 1. Vous n'êtes pas obligé de jouer, ni de ne pas jouer
 2. Je mixe, ou quelqu'un d'autre le fait
