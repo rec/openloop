@@ -147,6 +147,7 @@ def render_navigation(
         f'<a class="language-toggle" href="#" data-page="{other_page}">'
         f".{other_language}</a>"
     )
+    links.append('<a href="https://www.twitch.tv/loopopenloop">twitch</a>')
     return '<nav aria-label="Pages">' + " ".join(links) + "</nav>"
 
 
