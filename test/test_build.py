@@ -63,6 +63,7 @@ def test_command_bar_lists_the_current_language_pages(site: Path) -> None:
     for name in ("technology", "history", "rouen", "rules"):
         (site / "en" / f"{name}.md").write_text(name)
     (site / "fr" / "rouen.md").write_text("rouen")
+    (site / "fr" / "technologie.md").write_text("technologie")
     Build(root=site, sync=False).run()
     html = (site / "build/index.html").read_text()
     assert (
@@ -71,7 +72,7 @@ def test_command_bar_lists_the_current_language_pages(site: Path) -> None:
         '<a href="#" data-page="en/history">history</a> '
         '<a href="#" data-page="en/rouen">rouen</a> <a href="#" '
         'data-page="en/rules">rules</a> <a href="#" '
-        'data-page="en/technology">technology</a> '
+        'data-page="en/technology">tech</a> '
         '<a href="https://www.twitch.tv/loopopenloop">stream</a> '
         '<a class="language-toggle" href="#" data-page="fr/index">.fr</a></nav>'
     ) in html
@@ -79,6 +80,7 @@ def test_command_bar_lists_the_current_language_pages(site: Path) -> None:
         '<nav aria-label="Pages"><a href="#" data-page="fr/index" '
         'aria-current="page">index</a> <a href="mailto:loop@ax.to">contact</a> '
         '<a href="#" data-page="fr/rouen">rouen</a> '
+        '<a href="#" data-page="fr/technologie">tech</a> '
         '<a href="https://www.twitch.tv/loopopenloop">stream</a> '
         '<a class="language-toggle" href="#" data-page="en/index">.en</a></nav>'
     ) in html

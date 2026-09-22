@@ -138,10 +138,11 @@ def render_navigation(
     links: list[str] = []
     for source in sources:
         name = source.stem
+        label = "tech" if name in {"technology", "technologie"} else name
         attributes = f'href="#" data-page="{language}/{escape(name, quote=True)}"'
         if name == current:
             attributes += ' aria-current="page"'
-        links.append(f"<a {attributes}>{escape(name)}</a>")
+        links.append(f"<a {attributes}>{escape(label)}</a>")
         if name == "index":
             links.append('<a href="mailto:loop@ax.to">contact</a>')
     links.append('<a href="https://www.twitch.tv/loopopenloop">stream</a>')
