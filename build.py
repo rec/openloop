@@ -142,12 +142,12 @@ def render_navigation(
         if name == current:
             attributes += ' aria-current="page"'
         links.append(f"<a {attributes}>{escape(name)}</a>")
+    links.append('<a href="https://www.twitch.tv/loopopenloop">stream</a>')
     other_language = "fr" if language == "en" else "en"
     links.append(
         f'<a class="language-toggle" href="#" data-page="{other_page}">'
         f".{other_language}</a>"
     )
-    links.append('<a href="https://www.twitch.tv/loopopenloop">twitch</a>')
     return '<nav aria-label="Pages">' + " ".join(links) + "</nav>"
 
 

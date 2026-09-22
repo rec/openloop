@@ -70,15 +70,15 @@ def test_command_bar_lists_the_current_language_pages(site: Path) -> None:
         'aria-current="page">index</a> <a href="#" data-page="en/history">history</a> '
         '<a href="#" data-page="en/rouen">rouen</a> <a href="#" '
         'data-page="en/rules">rules</a> <a href="#" '
-        'data-page="en/technology">technology</a> <a class="language-toggle" '
-        'href="#" data-page="fr/index">.fr</a> <a href="https://www.twitch.tv/loopopenloop">'
-        "twitch</a></nav>"
+        'data-page="en/technology">technology</a> '
+        '<a href="https://www.twitch.tv/loopopenloop">stream</a> '
+        '<a class="language-toggle" href="#" data-page="fr/index">.fr</a></nav>'
     ) in html
     assert (
         '<nav aria-label="Pages"><a href="#" data-page="fr/index" '
         'aria-current="page">index</a> <a href="#" data-page="fr/rouen">rouen</a> '
-        '<a class="language-toggle" href="#" data-page="en/index">.en</a> '
-        '<a href="https://www.twitch.tv/loopopenloop">twitch</a></nav>'
+        '<a href="https://www.twitch.tv/loopopenloop">stream</a> '
+        '<a class="language-toggle" href="#" data-page="en/index">.en</a></nav>'
     ) in html
 
 
