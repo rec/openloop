@@ -142,6 +142,8 @@ def render_navigation(
         if name == current:
             attributes += ' aria-current="page"'
         links.append(f"<a {attributes}>{escape(name)}</a>")
+        if name == "index":
+            links.append('<a href="mailto:loop@ax.to">contact</a>')
     links.append('<a href="https://www.twitch.tv/loopopenloop">stream</a>')
     other_language = "fr" if language == "en" else "en"
     links.append(
