@@ -42,7 +42,6 @@ class Deploy(BaseModel, frozen=True):
             CLOUDFLARE_ACCOUNT_ID,
         )
         cloudflare_token = prompt_value("Cloudflare API token: ")
-        virtualmin_password = prompt_value("Virtualmin login value for remite: ")
         server_ip = socket.gethostbyname("server.swirly.com")
         self.print_summary(
             groups,
@@ -64,7 +63,6 @@ class Deploy(BaseModel, frozen=True):
             access_key_id,
             secret_access_key,
         )
-        self.configure_virtualmin(virtualmin_password)
         self.install_boto3()
         self.upload_redirector()
         self.write_config(
@@ -147,23 +145,6 @@ class Deploy(BaseModel, frozen=True):
         for page in client.get_paginator("list_objects_v2").paginate(Bucket=bucket):
             for item in page.get("Contents", []):
                 client.put_object_acl(Bucket=bucket, Key=item["Key"], ACL="private")
-
-    def configure_virtualmin(self, password: str) -> None:
-        """Create the Virtualmin host and request its certificate."""
-        command = (
-            "set -eu\n"
-            "if ! virtualmin list-domains --name-only | "
-            "grep -Fx remite.ax.to >/dev/null; then\n"
-            "  virtualmin create-domain \\\n"
-            "    --domain remite.ax.to \\\n"
-            "    --desc 'Object Storage media redirector' \\\n"
-            "    --user remite \\\n"
-            "    --passfile /dev/stdin \\\n"
-            "    --unix --dir --web --ssl --logrotate --limits-from-plan\n"
-            "fi\n"
-            "virtualmin generate-letsencrypt-cert --domain remite.ax.to --web\n"
-        )
-        self.run_command(["ssh", self.remote, command], password + "\n")
 
     def install_boto3(self) -> None:
         """Create the remite virtual environment and install its dependency."""
@@ -272,7 +253,6 @@ class Deploy(BaseModel, frozen=True):
         print(f"Cloudflare: set remite.ax.to to {server_ip}")
         print(f"Hetzner: create {S3_BUCKET} in {S3_REGION} at {S3_ENDPOINT} if needed")
         print(f"Hetzner: make {S3_BUCKET} and its objects private")
-        print("Virtualmin: create remite.ax.to if needed and request its certificate")
         print("Server: enable Apache CGI support if needed, then install boto3")
         print("Server: upload the CGI and Apache configuration")
         print("Server: write the server-only Hetzner configuration")

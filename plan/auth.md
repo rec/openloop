@@ -19,20 +19,19 @@ uv run scripts/deploy.py
 ```
 
 It first asks for group names and passwords. Enter a blank group name, or
-`none`, when the list is complete. It then asks for the Cloudflare token and
-the Unix/Virtualmin password for `remite`. It uses the default boto3
-credentials in `~/.aws` for Hetzner, the `axto-private` bucket, and the `nbg1`
-region. Passwords and credentials are never printed in the confirmation
-summary.
+`none`, when the list is complete. It then asks for the Cloudflare token. It
+uses the default boto3 credentials in `~/.aws` for Hetzner, the `axto-private`
+bucket, and the `nbg1` region. Passwords and credentials are never printed in
+the confirmation summary. The `remite.ax.to` Virtualmin host must already
+exist.
 
 After confirmation, it:
 
 1. Creates or updates the unproxied Cloudflare `A` record for `remite.ax.to`.
 2. Creates the bucket if needed, removes its bucket policy, and makes each
    existing object private.
-3. Creates the Virtualmin host when it does not exist, requests its Let's
-   Encrypt certificate, enables Apache CGI support if necessary, and installs
-   `boto3` in `/home/remite/venv`.
+3. Enables Apache CGI support if necessary and installs `boto3` in
+   `/home/remite/venv`.
 4. Uploads the CGI and its `.htaccess`, writes the server-only Hetzner
    configuration with mode `0600`, and creates `/home/remite/.htpasswd` from
    the group passwords.

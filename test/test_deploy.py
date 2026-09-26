@@ -24,7 +24,6 @@ def test_dry_run_prints_work_without_running_commands() -> None:
                 "",
                 "",
                 "cf",
-                "vm",
                 "y",
             ],
         ),
