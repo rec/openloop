@@ -1,23 +1,39 @@
-# Private S3 media redirects
+# Private Hetzner Object Storage media redirects
+
+## Additional work beyond the prompt
+
+None.
 
 ## Goal
 
 Serve links such as `https://remite.ax.to/group-a/rehearsal.mp4` to people who
 know the group password. Apache authenticates the request, then a small Python
-CGI program redirects the browser to a five-minute, read-only S3 URL for that
-object. The browser downloads the tape from S3, not from `server.swirly.com`.
+CGI program uses `boto3` to redirect the browser to a five-minute Hetzner
+Object Storage URL for that object. The browser downloads the tape directly
+from Hetzner, not from `server.swirly.com`.
 
 There are two shared accounts: `group-a` and `group-b`. Each can access only
 the S3 prefix with the same name. Change a password in `.htpasswd` to revoke
 that group's access. Add additional accounts to the program's prefix mapping
 only if individual revocation becomes necessary.
 
-## AWS setup
+## Hetzner Object Storage setup
 
-1. Keep S3 Block Public Access enabled. Do not make the bucket or its objects
-   public.
-2. Create an IAM user named `remite-signer` with one access key. Give it only
-   `s3:GetObject` on the two required prefixes, replacing `YOUR_BUCKET`:
+1. Keep the bucket private.
+2. Create S3 credentials in the Hetzner Console. Keep the access key and
+   secret key private. The secret key is shown only once when created.
+3. Copy `auth/remite_config.py.example` to `auth/remite_config.py`, and fill
+   in the bucket, location, access key, and secret key. Use the Hetzner endpoint
+   matching the bucket location, such as `fsn1.your-objectstorage.com`.
+   `auth/remite_config.py` is ignored by Git.
+4. By default, a Hetzner S3 key can access every bucket in its project. For
+   stronger containment, put this bucket in a project dedicated to the
+   redirector, or apply a Hetzner bucket policy that allows only the
+   redirector's access key. The current design favors easy access, so a
+   dedicated project is sufficient.
+
+The policy below is an optional bucket-policy starting point for a dedicated
+signing key, replacing `YOUR_BUCKET`, `PROJECT_ID`, and `ACCESS_KEY`:
 
    ```json
    {
@@ -25,6 +41,9 @@ only if individual revocation becomes necessary.
      "Statement": [
        {
          "Effect": "Allow",
+         "Principal": {
+           "AWS": "arn:aws:iam:::user/pPROJECT_ID:ACCESS_KEY"
+         },
          "Action": "s3:GetObject",
          "Resource": [
            "arn:aws:s3:::YOUR_BUCKET/group-a/*",
@@ -35,12 +54,10 @@ only if individual revocation becomes necessary.
    }
    ```
 
-   Do not grant `s3:ListBucket`, write permissions, or access outside these
-   prefixes.
-3. Fill in `auth/remite_config.py.example` with the bucket's region, DNS host,
-   access-key ID, and secret key. Copy the completed file to
-   `/home/remite/remite_config.py` on the server with mode `0600` and ownership
-   `remite:remite`. It is deliberately not uploaded or committed.
+   Hetzner uses principals in the form
+   `arn:aws:iam:::user/pPROJECT_ID:ACCESS_KEY`; use that value when applying a
+   policy. A separate credentials project is required for a policy that grants
+   a key access to a bucket in another project.
 
 ## Create the Virtualmin host
 
@@ -57,7 +74,7 @@ the command.
 ```sh
 virtualmin create-domain \
   --domain remite.ax.to \
-  --desc 'S3 media redirector' \
+  --desc 'Object Storage media redirector' \
   --user remite \
   --passfile /root/remite-virtualmin-password \
   --unix --dir --web --ssl --logrotate --limits-from-plan
@@ -87,18 +104,12 @@ instead of `cgid`.
 
 ## Install the redirector
 
-1. Run `auth/upload.sh` locally. It uploads only the public CGI program and
-   the two Apache `.htaccess` files. It sets uploaded files to `0644` and
-   directories to `0755`; Apache executes the CGI through its handler, so the
-   program itself does not need an executable mode.
-2. On the server, create `/home/remite/remite_config.py` from the example:
-
-   ```sh
-   install -o remite -g remite -m 600 \
-     /path/to/completed/remite_config.py /home/remite/remite_config.py
-   ```
-
-3. Create the two shared passwords. The `-c` flag is used only for the first
+1. Run `uv run scripts/deploy.py` locally. It installs `boto3` in
+   `/home/remite/venv` as the `remite` user, uploads the CGI program and
+   configuration, and installs both Apache `.htaccess` files. It sets the CGI
+   program to `0755`, server-only configuration to `0600`, and `.htaccess`
+   files to `0644`.
+2. Create the two shared passwords. The `-c` flag is used only for the first
    account, because it creates the password file:
 
    ```sh
@@ -108,22 +119,22 @@ instead of `cgid`.
    chmod 640 /home/remite/.htpasswd
    ```
 
-4. Visit a known object at `https://remite.ax.to/group-a/...`. Apache should
-   ask for `group-a`'s password and then redirect the browser to S3. A
+3. Visit a known object at `https://remite.ax.to/group-a/...`. Apache should
+   ask for `group-a`'s password and then redirect the browser to Hetzner. A
    `group-b` account must receive HTTP 403 for a `group-a` URL.
 
 ## ax.to redirect
 
 `auth/ax.to/.htaccess` is the existing root redirect configuration for
-`/home/ax/public_html/.htaccess`. `auth/upload.sh` installs it with owner and
-group `ax:ax`. It retains the `ax.to` to `ax.to/loop` 302 and the existing
+`/home/ax/public_html/.htaccess`. The deployment script installs it with owner
+and group `ax:ax`. It retains the `ax.to` to `ax.to/loop` 302 and the existing
 `www` canonicalization rule.
 
 ## Operational notes
 
-- The link given to people is permanent. Only the S3 URL generated after a
-  successful password check expires, after five minutes.
-- The signing key may issue URLs only for the two configured prefixes. Rotate
-  or disable that IAM access key if the server is compromised.
+- The link given to people is permanent. Only the Object Storage URL generated
+  after a successful password check expires, after five minutes.
+- The redirector allows only the two configured prefixes. Rotate or delete its
+  Hetzner S3 credentials if the server is compromised.
 - A person who knows a group password can share it. This design intentionally
   favors easy access over strong identity verification.
