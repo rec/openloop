@@ -6,7 +6,6 @@ import socket
 import subprocess
 import sys
 from collections.abc import Mapping
-from getpass import getpass
 from pathlib import Path
 from shlex import join, quote
 from typing import Annotated
@@ -45,10 +44,10 @@ class Deploy(BaseModel, frozen=True):
             f"Cloudflare account ID [{CLOUDFLARE_ACCOUNT_ID}]: ",
             CLOUDFLARE_ACCOUNT_ID,
         )
-        cloudflare_token = prompt_secret("Cloudflare API token: ")
-        access_key_id = prompt_secret("Hetzner S3 access key: ")
-        secret_access_key = prompt_secret("Hetzner S3 secret key: ")
-        virtualmin_password = prompt_secret("Virtualmin password for remite: ")
+        cloudflare_token = prompt_value("Cloudflare API token: ")
+        access_key_id = prompt_value("Hetzner S3 access key: ")
+        secret_access_key = prompt_value("Hetzner S3 secret key: ")
+        virtualmin_password = prompt_value("Virtualmin password for remite: ")
         server_ip = socket.gethostbyname("server.swirly.com")
         self.print_summary(
             groups,
@@ -341,17 +340,10 @@ def prompt_groups() -> dict[str, str]:
         if name in groups:
             print("That group already exists.")
             continue
-        groups[name] = prompt_secret(f"Password for {name}: ")
+        groups[name] = prompt_value(f"Password for {name}: ")
     if not groups:
         sys.exit("At least one group is required")
     return groups
-
-
-def prompt_secret(prompt: str) -> str:
-    """Prompt until a non-empty secret is provided."""
-    while not (value := getpass(prompt)):
-        print("A value is required.")
-    return value
 
 
 def prompt_value(prompt: str, default: str = "") -> str:
