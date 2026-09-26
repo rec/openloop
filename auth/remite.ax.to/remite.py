@@ -1,5 +1,5 @@
 #!/home/remite/venv/bin/python
-"""Authenticate a request through Apache and redirect it to private S3 media."""
+"""Authenticate a request through Apache and redirect it to Hetzner media."""
 
 import os
 import sys

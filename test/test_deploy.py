@@ -5,21 +5,63 @@ from unittest.mock import patch
 
 import tyro
 
-from scripts.deploy import Deploy
+from scripts.deploy import Deploy, render_config
 
 
-def test_dry_run_prints_commands_without_running_them() -> None:
+def test_dry_run_prints_work_without_running_commands() -> None:
     output = StringIO()
-    deployment = Deploy(root=Path("/workspace"), dry_run=True)
+    deployment = Deploy(root=Path.cwd(), dry_run=True)
 
-    with redirect_stdout(output), patch("scripts.deploy.subprocess.run") as run:
+    with (
+        redirect_stdout(output),
+        patch(
+            "builtins.input",
+            side_effect=[
+                "group-a",
+                "group-b",
+                "",
+                "axto-private",
+                "",
+                "",
+                "",
+                "y",
+            ],
+        ),
+        patch(
+            "scripts.deploy.getpass",
+            side_effect=[
+                "group-a-password",
+                "group-b-password",
+                "cf",
+                "key",
+                "secret",
+                "vm",
+            ],
+        ),
+        patch("scripts.deploy.socket.gethostbyname", return_value="203.0.113.10"),
+        patch("scripts.deploy.subprocess.run") as run,
+    ):
         deployment.run()
 
     assert run.call_count == 0
-    assert "ssh root@server.swirly.com" in output.getvalue()
-    assert "rsync -av --chown=remite:remite" in output.getvalue()
-    assert "/workspace/auth/remite_config.py" in output.getvalue()
-    assert "--chown=ax:ax" in output.getvalue()
+    assert "Groups: group-a, group-b" in output.getvalue()
+    assert "Cloudflare: set remite.ax.to to 203.0.113.10" in output.getvalue()
+    assert "Hetzner: make axto-private and its objects private" in output.getvalue()
+
+
+def test_render_config_keeps_passwords_out() -> None:
+    config = render_config(
+        {"group-a": "group-a-password", "group-b": "group-b-password"},
+        "axto-private",
+        "fsn1",
+        "fsn1.your-objectstorage.com",
+        "access-key",
+        "secret-key",
+    )
+
+    assert "group-a-password" not in config
+    assert "group-b-password" not in config
+    assert "PREFIXES = {'group-a': 'group-a/', 'group-b': 'group-b/'}" in config
 
 
 def test_short_dry_run_flag() -> None:
