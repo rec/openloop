@@ -47,7 +47,7 @@ class Deploy(BaseModel, frozen=True):
         cloudflare_token = prompt_value("Cloudflare API token: ")
         access_key_id = prompt_value("Hetzner S3 access key: ")
         secret_access_key = prompt_value("Hetzner S3 secret key: ")
-        virtualmin_password = prompt_value("Virtualmin password for remite: ")
+        virtualmin_password = prompt_value("Virtualmin login value for remite: ")
         server_ip = socket.gethostbyname("server.swirly.com")
         self.print_summary(
             groups,
@@ -340,7 +340,7 @@ def prompt_groups() -> dict[str, str]:
         if name in groups:
             print("That group already exists.")
             continue
-        groups[name] = prompt_value(f"Password for {name}: ")
+        groups[name] = prompt_value(f"Access value for {name}: ")
     if not groups:
         sys.exit("At least one group is required")
     return groups
