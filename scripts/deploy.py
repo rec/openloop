@@ -21,6 +21,9 @@ from pydantic import BaseModel
 
 CLOUDFLARE_ACCOUNT_ID = "44066e01f0c0660a57222615b9fc72e1"
 GROUP_NAME = re.compile(r"[a-z][a-z0-9-]*\Z")
+S3_BUCKET = "axto-private"
+S3_REGION = "nbg1"
+S3_ENDPOINT = f"{S3_REGION}.your-objectstorage.com"
 
 
 class Deploy(BaseModel, frozen=True):
@@ -34,40 +37,30 @@ class Deploy(BaseModel, frozen=True):
     def run(self) -> None:
         """Request configuration, confirm it, then provision the redirector."""
         groups = prompt_groups()
-        bucket = prompt_value("Hetzner bucket: ")
-        region = prompt_value("Hetzner region [fsn1]: ", "fsn1")
-        endpoint = prompt_value(
-            f"Hetzner endpoint [{region}.your-objectstorage.com]: ",
-            f"{region}.your-objectstorage.com",
-        )
         cloudflare_account_id = prompt_value(
             f"Cloudflare account ID [{CLOUDFLARE_ACCOUNT_ID}]: ",
             CLOUDFLARE_ACCOUNT_ID,
         )
         cloudflare_token = prompt_value("Cloudflare API token: ")
-        access_key_id = prompt_value("Hetzner S3 access key: ")
-        secret_access_key = prompt_value("Hetzner S3 secret key: ")
         virtualmin_password = prompt_value("Virtualmin login value for remite: ")
         server_ip = socket.gethostbyname("server.swirly.com")
         self.print_summary(
             groups,
-            bucket,
-            region,
-            endpoint,
             cloudflare_account_id,
             server_ip,
         )
         if input("Proceed? [y/N] ").lower() != "y":
             return
         if self.dry_run:
-            self.print_dry_run(groups, bucket, region, endpoint, server_ip)
+            self.print_dry_run(groups, server_ip)
             return
 
+        access_key_id, secret_access_key = local_s3_credentials()
         self.configure_dns(cloudflare_account_id, cloudflare_token, server_ip)
         self.configure_bucket(
-            bucket,
-            region,
-            endpoint,
+            S3_BUCKET,
+            S3_REGION,
+            S3_ENDPOINT,
             access_key_id,
             secret_access_key,
         )
@@ -76,9 +69,9 @@ class Deploy(BaseModel, frozen=True):
         self.upload_redirector()
         self.write_config(
             groups,
-            bucket,
-            region,
-            endpoint,
+            S3_BUCKET,
+            S3_REGION,
+            S3_ENDPOINT,
             access_key_id,
             secret_access_key,
         )
@@ -256,16 +249,13 @@ class Deploy(BaseModel, frozen=True):
     def print_summary(
         self,
         groups: dict[str, str],
-        bucket: str,
-        region: str,
-        endpoint: str,
         cloudflare_account_id: str,
         server_ip: str,
     ) -> None:
         """Print the non-secret deployment configuration for confirmation."""
         print("Groups: " + ", ".join(groups))
-        print(f"Hetzner bucket: {bucket}")
-        print(f"Hetzner endpoint: {endpoint} ({region})")
+        print(f"Hetzner bucket: {S3_BUCKET}")
+        print(f"Hetzner endpoint: {S3_ENDPOINT} ({S3_REGION})")
         print(f"Cloudflare account: {cloudflare_account_id}")
         print(f"Server: {self.remote}")
         print(f"remite.ax.to: {server_ip}")
@@ -276,15 +266,12 @@ class Deploy(BaseModel, frozen=True):
     def print_dry_run(
         self,
         groups: dict[str, str],
-        bucket: str,
-        region: str,
-        endpoint: str,
         server_ip: str,
     ) -> None:
         """Describe the operations that would run after confirmation."""
         print(f"Cloudflare: set remite.ax.to to {server_ip}")
-        print(f"Hetzner: create {bucket} in {region} at {endpoint} if needed")
-        print(f"Hetzner: make {bucket} and its objects private")
+        print(f"Hetzner: create {S3_BUCKET} in {S3_REGION} at {S3_ENDPOINT} if needed")
+        print(f"Hetzner: make {S3_BUCKET} and its objects private")
         print("Virtualmin: create remite.ax.to if needed and request its certificate")
         print("Server: enable Apache CGI support if needed, then install boto3")
         print("Server: upload the CGI and Apache configuration")
@@ -326,6 +313,15 @@ def cloudflare_request(
             sys.exit(f"Cloudflare API returned an unexpected result: {payload}")
         records.append(item)
     return records
+
+
+def local_s3_credentials() -> tuple[str, str]:
+    """Return the access keys selected by the local boto3 configuration."""
+    credentials = boto3.Session().get_credentials()
+    if credentials is None:
+        sys.exit("No S3 credentials were found in the local AWS configuration")
+    frozen = credentials.get_frozen_credentials()
+    return frozen.access_key, frozen.secret_key
 
 
 def prompt_groups() -> dict[str, str]:

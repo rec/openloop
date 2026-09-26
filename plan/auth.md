@@ -19,9 +19,11 @@ uv run scripts/deploy.py
 ```
 
 It first asks for group names and passwords. Enter a blank group name, or
-`none`, when the list is complete. It then asks for the Hetzner bucket and
-credentials, Cloudflare token, and the Unix/Virtualmin password for `remite`.
-Passwords and credentials are never printed in the confirmation summary.
+`none`, when the list is complete. It then asks for the Cloudflare token and
+the Unix/Virtualmin password for `remite`. It uses the default boto3
+credentials in `~/.aws` for Hetzner, the `axto-private` bucket, and the `nbg1`
+region. Passwords and credentials are never printed in the confirmation
+summary.
 
 After confirmation, it:
 
