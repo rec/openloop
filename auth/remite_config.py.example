@@ -1,0 +1,9 @@
+S3_ENDPOINT = "fsn1.your-objectstorage.com"
+S3_REGION = "fsn1"
+S3_BUCKET = "YOUR_BUCKET"
+ACCESS_KEY_ID = "YOUR_ACCESS_KEY_ID"
+SECRET_ACCESS_KEY = "YOUR_SECRET_ACCESS_KEY"
+PREFIXES = {
+    "group-a": "group-a/",
+    "group-b": "group-b/",
+}

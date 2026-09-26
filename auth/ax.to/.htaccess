@@ -1,0 +1,11 @@
+# Options +FollowSymLinks
+
+RedirectMatch 302 ^/$ https://ax.to/loop
+
+# BEGIN WithoutWWW
+
+RewriteEngine on
+RewriteCond %{HTTP_HOST} ^www.ax.to [NC]
+RewriteRule ^(.*)$ http://ax.to/$1 [R=301,L]
+
+# END WithoutWWW
