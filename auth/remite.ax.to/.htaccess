@@ -1,0 +1,11 @@
+Options +ExecCGI -Indexes -MultiViews
+AddHandler cgi-script .py
+
+AuthType Basic
+AuthName "Rehearsal tapes"
+AuthUserFile /home/remite/.htpasswd
+Require valid-user
+
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/remite\.py$
+RewriteRule ^ remite.py [END]
