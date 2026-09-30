@@ -6,8 +6,8 @@ None.
 
 ## Goal
 
-`https://remite.ax.to/group-a/rehearsal.mp4` asks for the password for
-`group-a`, then redirects the browser to a five-minute private Hetzner Object
+`https://remite.ax.to/totm/rehearsal.mp4` asks for the password for
+`totm`, then redirects the browser to a five-minute private Hetzner Object
 Storage URL. The tape is downloaded from Hetzner, not `server.swirly.com`.
 
 ## Deployment
@@ -46,7 +46,10 @@ configuration without making any changes.
 ## Access model
 
 Each group name becomes both an Apache Basic Auth username and an Object
-Storage prefix. For example, `group-a` can access only `group-a/` objects.
+Storage prefix. For example, `totm` can access only `totm/` objects, while
+`oderg-in-duo` can access only `oderg-in-duo/` objects. Visiting `/` shows an
+index of the signed-in group's files and directories; directory links generate
+further index pages, and file links use the five-minute download redirect.
 Change a group password by running the deployment again with the desired group
 list and password. Deleting a group from that list removes its Apache account.
 
