@@ -14,6 +14,7 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 import boto3
+import tomlkit
 import tyro
 from botocore.config import Config
 from botocore.exceptions import ClientError
@@ -26,6 +27,14 @@ S3_REGION = "nbg1"
 S3_ENDPOINT = f"{S3_REGION}.your-objectstorage.com"
 
 
+class Secrets(BaseModel, frozen=True):
+    """Local deployment accounts and Cloudflare credentials."""
+
+    groups: dict[str, str]
+    cloudflare_account_id: str
+    cloudflare_token: str
+
+
 class Deploy(BaseModel, frozen=True):
     """Provision remite.ax.to and deploy its Hetzner redirector."""
 
@@ -36,23 +45,38 @@ class Deploy(BaseModel, frozen=True):
 
     def run(self) -> None:
         """Request configuration, confirm it, then provision the redirector."""
-        groups = prompt_groups()
-        cloudflare_account_id = prompt_value(
-            f"Cloudflare account ID [{CLOUDFLARE_ACCOUNT_ID}]: ",
-            CLOUDFLARE_ACCOUNT_ID,
-        )
-        cloudflare_token = prompt_value("Cloudflare API token: ")
+        secrets_path = self.root / "secrets.toml"
+        saved = secrets_path.exists()
+        if saved:
+            secrets = Secrets.model_validate(tomlkit.parse(secrets_path.read_text()))
+        else:
+            secrets = Secrets(
+                groups=prompt_groups(),
+                cloudflare_account_id=prompt_value(
+                    f"Cloudflare account ID [{CLOUDFLARE_ACCOUNT_ID}]: ",
+                    CLOUDFLARE_ACCOUNT_ID,
+                ),
+                cloudflare_token=prompt_value("Cloudflare API token: "),
+            )
+        groups = secrets.groups
+        cloudflare_account_id = secrets.cloudflare_account_id
+        cloudflare_token = secrets.cloudflare_token
         server_ip = socket.gethostbyname("server.swirly.com")
         self.print_summary(
             groups,
             cloudflare_account_id,
             server_ip,
         )
-        if input("Proceed? [y/N] ").lower() != "y":
+        if not saved and input("Proceed? [y/N] ").lower() != "y":
             return
         if self.dry_run:
             self.print_dry_run(groups, server_ip)
             return
+
+        if not saved:
+            with secrets_path.open("x") as stream:
+                secrets_path.chmod(0o600)
+                stream.write(tomlkit.dumps(secrets.model_dump()))
 
         access_key_id, secret_access_key = local_s3_credentials()
         self.configure_dns(cloudflare_account_id, cloudflare_token, server_ip)

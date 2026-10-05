@@ -25,6 +25,11 @@ bucket, and the `nbg1` region. Passwords and credentials are never printed in
 the confirmation summary. The `remite.ax.to` Virtualmin host must already
 exist.
 
+The first confirmed deployment saves the group names, passwords, Cloudflare
+account ID, and token in the ignored `secrets.toml` file with mode `0600`.
+Later runs read that file and proceed without prompts. Edit it to change the
+accounts or token. Dry runs do not create the file.
+
 After confirmation, it:
 
 1. Creates or updates the unproxied Cloudflare `A` record for `remite.ax.to`.
@@ -50,8 +55,8 @@ Storage prefix. For example, `totm` can access only `totm/` objects, while
 `oderg-in-duo` can access only `oderg-in-duo/` objects. Visiting `/` shows an
 index of the signed-in group's files and directories; directory links generate
 further index pages, and file links use the five-minute download redirect.
-Change a group password by running the deployment again with the desired group
-list and password. Deleting a group from that list removes its Apache account.
+Change a group password in `secrets.toml`, then run the deployment again.
+Deleting a group from that file removes its Apache account on the next deployment.
 
 The credentials used by the redirector can read the bucket. Put the bucket in
 a dedicated Hetzner project if its other buckets should not share that access.

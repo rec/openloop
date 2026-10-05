@@ -1,4 +1,5 @@
 /build/
+/secrets.toml
 /.venv/
 __pycache__/
 .pytest_cache/
