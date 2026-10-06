@@ -78,12 +78,12 @@
 
 <article id="en/index" lang="en" hidden>
 <h1>Welcome</h1>
-<p>Read <a href="?en=history" data-page="en/history">history</a>.</p>
+<p>Read <a href="?history" data-page="en/history">history</a>.</p>
 <nav aria-label="Pages"><a href="?" data-page="en/index" aria-current="page">index</a> <a href="mailto:loop@ax.to">contact</a> <a href="https://www.twitch.tv/loopopenloop">stream</a> <a class="language-toggle" href="?" data-page="fr/index">.fr</a></nav>
 </article>
 <article id="fr/index" lang="fr" hidden>
 <h1>Bienvenue</h1>
-<p>Lire <a href="?fr=histoire" data-page="fr/histoire">l’histoire</a>.</p>
+<p>Lire <a href="?histoire" data-page="fr/histoire">l’histoire</a>.</p>
 <nav aria-label="Pages"><a href="?" data-page="fr/index" aria-current="page">index</a> <a href="mailto:loop@ax.to">contact</a> <a href="https://www.twitch.tv/loopopenloop">stream</a> <a class="language-toggle" href="?" data-page="en/index">.en</a></nav>
 </article>
     </main>
@@ -109,7 +109,7 @@
         window.scrollTo(0, 0);
         if (updateUrl) {
           const stem = content.id.slice(3);
-          const query = stem === "index" ? "" : "?" + new URLSearchParams([[content.lang, stem]]);
+          const query = stem === "index" ? "" : "?" + encodeURIComponent(stem);
           history.pushState({ page: content.id, text: true }, "", location.pathname + query);
         }
       }
@@ -125,20 +125,20 @@
       }
 
       function restoreUrl() {
-        for (const [language, stem] of new URLSearchParams(location.search)) {
-          if (language !== "en" && language !== "fr") continue;
-          const page = document.getElementById(language + "/" + stem);
-          if (page) {
-            showPage(page, false);
-            return;
-          }
-        }
         const remembered = document.getElementById(history.state?.page);
+        if (remembered && history.state.text) {
+          showPage(remembered, false);
+          return;
+        }
+        const stem = decodeURIComponent(location.search.slice(1));
+        const otherLanguage = language === "fr" ? "en" : "fr";
+        const page = document.getElementById(language + "/" + stem) ||
+          document.getElementById(otherLanguage + "/" + stem);
+        if (page) {
+          showPage(page, false);
+          return;
+        }
         if (remembered) {
-          if (history.state.text) {
-            showPage(remembered, false);
-            return;
-          }
           content.hidden = true;
           content = remembered;
         }

@@ -140,8 +140,7 @@ def render_navigation(
         name = source.stem
         label = "tech" if name in {"technology", "technologie"} else name
         attributes = (
-            f'href="{page_url(language, name)}" '
-            f'data-page="{language}/{escape(name, quote=True)}"'
+            f'href="{page_url(name)}" data-page="{language}/{escape(name, quote=True)}"'
         )
         if name == current:
             attributes += ' aria-current="page"'
@@ -149,19 +148,18 @@ def render_navigation(
         if name == "index":
             links.append('<a href="mailto:loop@ax.to">contact</a>')
     links.append('<a href="https://www.twitch.tv/loopopenloop">stream</a>')
-    other_language = "fr" if language == "en" else "en"
     other_stem = other_page.split("/", 1)[1]
     links.append(
-        f'<a class="language-toggle" href="{page_url(other_language, other_stem)}" '
+        f'<a class="language-toggle" href="{page_url(other_stem)}" '
         f'data-page="{escape(other_page, quote=True)}">'
-        f".{other_language}</a>"
+        f".{other_page[:2]}</a>"
     )
     return '<nav aria-label="Pages">' + " ".join(links) + "</nav>"
 
 
-def page_url(language: str, stem: str) -> str:
-    """Use the bare URL for index and language queries for other pages."""
-    return "?" if stem == "index" else f"?{language}={quote(stem)}"
+def page_url(stem: str) -> str:
+    """Use the bare URL for index and the page name for other pages."""
+    return "?" if stem == "index" else f"?{quote(stem)}"
 
 
 def render_links(text: str, page: str) -> str:
@@ -172,10 +170,9 @@ def render_links(text: str, page: str) -> str:
         url = urlsplit(match[2])
         if not url.scheme and not url.netloc and url.path.endswith(".md"):
             target = normpath(f"{dirname(page)}/{unquote(url.path[:-3])}")
-            language, stem = target.split("/", 1)
+            stem = target.split("/", 1)[1]
             attributes = (
-                f'href="{page_url(language, stem)}" '
-                f'data-page="{escape(target, quote=True)}"'
+                f'href="{page_url(stem)}" data-page="{escape(target, quote=True)}"'
             )
         else:
             attributes = f'href="{escape(match[2], quote=True)}"'
