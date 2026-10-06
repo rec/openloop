@@ -4,7 +4,7 @@ from html import escape
 from pathlib import Path
 from posixpath import dirname, normpath
 from shutil import copy2
-from urllib.parse import unquote, urlsplit
+from urllib.parse import quote, unquote, urlsplit
 
 import tyro
 from pydantic import BaseModel
@@ -139,7 +139,10 @@ def render_navigation(
     for source in sources:
         name = source.stem
         label = "tech" if name in {"technology", "technologie"} else name
-        attributes = f'href="#" data-page="{language}/{escape(name, quote=True)}"'
+        attributes = (
+            f'href="?{language}={quote(name)}" '
+            f'data-page="{language}/{escape(name, quote=True)}"'
+        )
         if name == current:
             attributes += ' aria-current="page"'
         links.append(f"<a {attributes}>{escape(label)}</a>")
@@ -147,8 +150,10 @@ def render_navigation(
             links.append('<a href="mailto:loop@ax.to">contact</a>')
     links.append('<a href="https://www.twitch.tv/loopopenloop">stream</a>')
     other_language = "fr" if language == "en" else "en"
+    other_stem = other_page.split("/", 1)[1]
     links.append(
-        f'<a class="language-toggle" href="#" data-page="{other_page}">'
+        f'<a class="language-toggle" href="?{other_language}={quote(other_stem)}" '
+        f'data-page="{escape(other_page, quote=True)}">'
         f".{other_language}</a>"
     )
     return '<nav aria-label="Pages">' + " ".join(links) + "</nav>"
@@ -162,7 +167,11 @@ def render_links(text: str, page: str) -> str:
         url = urlsplit(match[2])
         if not url.scheme and not url.netloc and url.path.endswith(".md"):
             target = normpath(f"{dirname(page)}/{unquote(url.path[:-3])}")
-            attributes = f'href="#" data-page="{escape(target, quote=True)}"'
+            language, stem = target.split("/", 1)
+            attributes = (
+                f'href="?{language}={quote(stem)}" '
+                f'data-page="{escape(target, quote=True)}"'
+            )
         else:
             attributes = f'href="{escape(match[2], quote=True)}"'
         parts.append(f"<a {attributes}>{escape(match[1])}</a>")

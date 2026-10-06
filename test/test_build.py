@@ -67,22 +67,22 @@ def test_command_bar_lists_the_current_language_pages(site: Path) -> None:
     Build(root=site, sync=False).run()
     html = (site / "build/index.html").read_text()
     assert (
-        '<nav aria-label="Pages"><a href="#" data-page="en/index" '
+        '<nav aria-label="Pages"><a href="?en=index" data-page="en/index" '
         'aria-current="page">index</a> <a href="mailto:loop@ax.to">contact</a> '
-        '<a href="#" data-page="en/history">history</a> '
-        '<a href="#" data-page="en/rouen">rouen</a> <a href="#" '
-        'data-page="en/rules">rules</a> <a href="#" '
+        '<a href="?en=history" data-page="en/history">history</a> '
+        '<a href="?en=rouen" data-page="en/rouen">rouen</a> <a href="?en=rules" '
+        'data-page="en/rules">rules</a> <a href="?en=technology" '
         'data-page="en/technology">tech</a> '
         '<a href="https://www.twitch.tv/loopopenloop">stream</a> '
-        '<a class="language-toggle" href="#" data-page="fr/index">.fr</a></nav>'
+        '<a class="language-toggle" href="?fr=index" data-page="fr/index">.fr</a></nav>'
     ) in html
     assert (
-        '<nav aria-label="Pages"><a href="#" data-page="fr/index" '
+        '<nav aria-label="Pages"><a href="?fr=index" data-page="fr/index" '
         'aria-current="page">index</a> <a href="mailto:loop@ax.to">contact</a> '
-        '<a href="#" data-page="fr/rouen">rouen</a> '
-        '<a href="#" data-page="fr/technologie">tech</a> '
+        '<a href="?fr=rouen" data-page="fr/rouen">rouen</a> '
+        '<a href="?fr=technologie" data-page="fr/technologie">tech</a> '
         '<a href="https://www.twitch.tv/loopopenloop">stream</a> '
-        '<a class="language-toggle" href="#" data-page="en/index">.en</a></nav>'
+        '<a class="language-toggle" href="?en=index" data-page="en/index">.en</a></nav>'
     ) in html
 
 
@@ -91,8 +91,18 @@ def test_language_toggle_uses_translated_filenames(site: Path) -> None:
     (site / "fr/histoire.md").write_text("# Histoire")
     Build(root=site, sync=False).run()
     html = (site / "build/index.html").read_text()
-    assert 'class="language-toggle" href="#" data-page="fr/histoire">.fr</a>' in html
-    assert 'class="language-toggle" href="#" data-page="en/history">.en</a>' in html
+    assert (
+        'class="language-toggle" href="?fr=histoire" data-page="fr/histoire">.fr</a>'
+    ) in html
+    assert (
+        'class="language-toggle" href="?en=history" data-page="en/history">.en</a>'
+    ) in html
+
+
+def test_accented_page_links_have_shareable_urls() -> None:
+    assert render_markdown("[Règles](../fr/règles.md)", "en/index") == (
+        '<p><a href="?fr=r%C3%A8gles" data-page="fr/règles">Règles</a></p>'
+    )
 
 
 def test_assets_are_copied_only_when_missing_or_newer(site: Path) -> None:

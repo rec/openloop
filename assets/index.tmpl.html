@@ -90,7 +90,7 @@
         intro.setAttribute("aria-label", "À propos d’openLoop");
       }}
 
-      function showPage(page) {{
+      function showPage(page, updateUrl = true) {{
         content.hidden = true;
         content = page;
         video.pause();
@@ -98,7 +98,41 @@
         content.hidden = false;
         document.documentElement.lang = content.lang;
         window.scrollTo(0, 0);
+        if (updateUrl) {{
+          const query = new URLSearchParams([[content.lang, content.id.slice(3)]]);
+          history.pushState(null, "", location.pathname + "?" + query);
+        }}
       }}
+
+      function showAnimation(updateUrl = true) {{
+        content.hidden = true;
+        intro.hidden = false;
+        video.play();
+        intro.focus();
+        if (updateUrl) {{
+          history.pushState({{ page: content.id }}, "", location.pathname);
+        }}
+      }}
+
+      function restoreUrl() {{
+        for (const [language, stem] of new URLSearchParams(location.search)) {{
+          if (language !== "en" && language !== "fr") continue;
+          const page = document.getElementById(language + "/" + stem);
+          if (page) {{
+            showPage(page, false);
+            return;
+          }}
+        }}
+        const remembered = document.getElementById(history.state?.page);
+        if (remembered) {{
+          content.hidden = true;
+          content = remembered;
+        }}
+        showAnimation(false);
+      }}
+
+      window.addEventListener("popstate", restoreUrl);
+      restoreUrl();
 
       intro.addEventListener("click", () => {{
         showPage(content);
@@ -108,6 +142,7 @@
         if (event.defaultPrevented) return;
         const link = event.target.closest("a[data-page]");
         if (link) {{
+          if (link.ariaCurrent !== "page" && (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)) return;
           event.preventDefault();
           if (link.ariaCurrent === "page") return;
           const page = document.getElementById(link.dataset.page);
@@ -122,10 +157,7 @@
           return;
         }}
 
-        content.hidden = true;
-        intro.hidden = false;
-        video.play();
-        intro.focus();
+        showAnimation();
       }});
     </script>
   </body>
