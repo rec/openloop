@@ -17,7 +17,7 @@ import boto3
 import tomlkit
 import tyro
 from botocore.config import Config
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 from pydantic import BaseModel
 
 CLOUDFLARE_ACCOUNT_ID = "44066e01f0c0660a57222615b9fc72e1"
@@ -45,6 +45,8 @@ class Deploy(BaseModel, frozen=True):
 
     def run(self) -> None:
         """Request configuration, confirm it, then provision the redirector."""
+        if not self.dry_run:
+            access_key_id, secret_access_key = local_s3_credentials()
         secrets_path = self.root / "secrets.toml"
         saved = secrets_path.exists()
         if saved:
@@ -78,7 +80,6 @@ class Deploy(BaseModel, frozen=True):
                 secrets_path.chmod(0o600)
                 stream.write(tomlkit.dumps(secrets.model_dump()))
 
-        access_key_id, secret_access_key = local_s3_credentials()
         self.configure_dns(cloudflare_account_id, cloudflare_token, server_ip)
         self.configure_bucket(
             S3_BUCKET,
@@ -274,6 +275,9 @@ class Deploy(BaseModel, frozen=True):
         server_ip: str,
     ) -> None:
         """Describe the operations that would run after confirmation."""
+        print(
+            "Hetzner: verify local S3 credentials with a read-only bucket-list request"
+        )
         print(f"Cloudflare: set remite.ax.to to {server_ip}")
         print(f"Hetzner: create {S3_BUCKET} in {S3_REGION} at {S3_ENDPOINT} if needed")
         print(f"Hetzner: make {S3_BUCKET} and its objects private")
@@ -320,11 +324,34 @@ def cloudflare_request(
 
 
 def local_s3_credentials() -> tuple[str, str]:
-    """Return the access keys selected by the local boto3 configuration."""
-    credentials = boto3.Session().get_credentials()
+    """Verify and return the access keys selected by local boto3 configuration."""
+    session = boto3.Session()
+    credentials = session.get_credentials()
     if credentials is None:
         sys.exit("No S3 credentials were found in the local AWS configuration")
     frozen = credentials.get_frozen_credentials()
+    print("Checking Hetzner S3 credentials...")
+    client = session.client(
+        "s3",
+        endpoint_url=f"https://{S3_ENDPOINT}",
+        region_name=S3_REGION,
+        aws_access_key_id=frozen.access_key,
+        aws_secret_access_key=frozen.secret_key,
+        config=Config(signature_version="s3v4", s3={"addressing_style": "virtual"}),
+    )
+    try:
+        client.list_buckets()
+    except ClientError as error:
+        sys.exit(
+            "Hetzner S3 credential verification failed: "
+            f"{error.response['Error']['Code']}. Check your local .aws credentials."
+        )
+    except BotoCoreError as error:
+        sys.exit(
+            "Could not complete Hetzner S3 credential verification: "
+            f"{type(error).__name__}"
+        )
+    print("Hetzner S3 credentials verified.")
     return frozen.access_key, frozen.secret_key
 
 

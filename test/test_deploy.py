@@ -3,6 +3,7 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+import pytest
 import tomlkit
 import tyro
 
@@ -33,13 +34,34 @@ def test_dry_run_prints_work_without_running_commands(tmp_path: Path) -> None:
         ),
         patch("scripts.deploy.socket.gethostbyname", return_value="203.0.113.10"),
         patch("scripts.deploy.subprocess.run") as run,
+        patch("scripts.deploy.local_s3_credentials") as credentials,
     ):
         deployment.run()
 
     assert run.call_count == 0
+    credentials.assert_not_called()
     assert "Groups: group-a, group-b" in output.getvalue()
     assert "Cloudflare: set remite.ax.to to 203.0.113.10" in output.getvalue()
     assert "Hetzner: make axto-private and its objects private" in output.getvalue()
+    assert not (tmp_path / "secrets.toml").exists()
+
+
+def test_failed_s3_verification_stops_before_prompts_or_changes(tmp_path: Path) -> None:
+    with (
+        patch(
+            "scripts.deploy.local_s3_credentials",
+            side_effect=SystemExit("Invalid S3 key"),
+        ),
+        patch("builtins.input") as prompt,
+        patch("scripts.deploy.socket.gethostbyname") as dns,
+        patch("scripts.deploy.subprocess.run") as run,
+        pytest.raises(SystemExit, match="Invalid S3 key"),
+    ):
+        Deploy(root=tmp_path).run()
+
+    prompt.assert_not_called()
+    dns.assert_not_called()
+    run.assert_not_called()
     assert not (tmp_path / "secrets.toml").exists()
 
 
