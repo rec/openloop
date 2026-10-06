@@ -99,8 +99,9 @@
         document.documentElement.lang = content.lang;
         window.scrollTo(0, 0);
         if (updateUrl) {{
-          const query = new URLSearchParams([[content.lang, content.id.slice(3)]]);
-          history.pushState(null, "", location.pathname + "?" + query);
+          const stem = content.id.slice(3);
+          const query = stem === "index" ? "" : "?" + new URLSearchParams([[content.lang, stem]]);
+          history.pushState({{ page: content.id, text: true }}, "", location.pathname + query);
         }}
       }}
 
@@ -125,6 +126,10 @@
         }}
         const remembered = document.getElementById(history.state?.page);
         if (remembered) {{
+          if (history.state.text) {{
+            showPage(remembered, false);
+            return;
+          }}
           content.hidden = true;
           content = remembered;
         }}

@@ -140,7 +140,7 @@ def render_navigation(
         name = source.stem
         label = "tech" if name in {"technology", "technologie"} else name
         attributes = (
-            f'href="?{language}={quote(name)}" '
+            f'href="{page_url(language, name)}" '
             f'data-page="{language}/{escape(name, quote=True)}"'
         )
         if name == current:
@@ -152,11 +152,16 @@ def render_navigation(
     other_language = "fr" if language == "en" else "en"
     other_stem = other_page.split("/", 1)[1]
     links.append(
-        f'<a class="language-toggle" href="?{other_language}={quote(other_stem)}" '
+        f'<a class="language-toggle" href="{page_url(other_language, other_stem)}" '
         f'data-page="{escape(other_page, quote=True)}">'
         f".{other_language}</a>"
     )
     return '<nav aria-label="Pages">' + " ".join(links) + "</nav>"
+
+
+def page_url(language: str, stem: str) -> str:
+    """Use the bare URL for index and language queries for other pages."""
+    return "?" if stem == "index" else f"?{language}={quote(stem)}"
 
 
 def render_links(text: str, page: str) -> str:
@@ -169,7 +174,7 @@ def render_links(text: str, page: str) -> str:
             target = normpath(f"{dirname(page)}/{unquote(url.path[:-3])}")
             language, stem = target.split("/", 1)
             attributes = (
-                f'href="?{language}={quote(stem)}" '
+                f'href="{page_url(language, stem)}" '
                 f'data-page="{escape(target, quote=True)}"'
             )
         else:
