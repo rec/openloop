@@ -118,8 +118,8 @@
         content.hidden = true;
         intro.hidden = false;
         video.play();
-        intro.focus();
         if (updateUrl) {
+          intro.focus();
           history.pushState({ page: content.id }, "", location.pathname);
         }
       }
