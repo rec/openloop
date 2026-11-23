@@ -8,4 +8,4 @@ Tout est diffusé, enregistré et préservé.
 
 Nous mixons d'une façon aujourd'hui, d'une autre demain.
 
-[Prochain spectacle : 17 octobre 2026, 15h - 19h au Diable Au Corps](rouen.md)
+[Prochain spectacle : 28 novembre 2026, 18h - 22h au Diable Au Corps](rouen.md)

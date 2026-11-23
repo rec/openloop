@@ -27,3 +27,8 @@ une demi-heure après avoir appris que tout allait s'arrêter.
 
 [Voici](https://soundcloud.com/tom-swirly/openloop-2002-09-21) les trente premières
 minutes d'un autre openLoop, choisi au hasard.
+
+## Le trizonal space warper
+
+L'idée géniale des trois spirales concentriques alternées qui orne la couverture a été
+inventée par [Jerry Andrus](https://fr.wikipedia.org/wiki/Jerry_Andrus).
